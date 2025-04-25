@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: respy_db
+    ports:
+      - "5432:5432"
+
+  minio-server:
+    image: minio/minio
+    container_name: minio-server
+    restart: always
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+
+  package-repository-app:
+    build: .
+    container_name: package-repository-app
+    depends_on:
+      - postgres-db
+      - minio-server
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/respy_db
+      SPRING_DATASOURCE_USERNAME: dev_user
+      SPRING_DATASOURCE_PASSWORD: password
+      STORAGE_STRATEGY: file-system
+      STORAGE_FILE_SYSTEM_PATH: /uploads/
+      MINIO_URL: http://minio-server:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: packages
+    volumes:
+      - ./uploads:/uploads

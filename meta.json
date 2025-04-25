@@ -1,0 +1,11 @@
+{
+  "name": "awesome-package",
+  "version": "1.0.0",
+  "author": "Burak",
+  "dependencies": [
+    {
+      "package": "even",
+      "version": "3.4.7"
+    }
+  ]
+}
